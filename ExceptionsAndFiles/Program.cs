@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace ExceptionsAndFiles;
+﻿namespace ExceptionsAndFiles;
 
 class Program
 {
@@ -11,37 +9,39 @@ class Program
     static void Main()
     {
         //EXCEPTIONS:
+        Console.WriteLine("Exceptions:");
         //try catch finally example
         try
         {
+            //try to access an index that doesn't exist
             int[] numbers = { 1, 2, 3 };
             Console.WriteLine(numbers[10]);
         }
         catch (IndexOutOfRangeException ex)
         {
+            //catch the exception and output a message so we dont crash
             Console.WriteLine("Index out of range");
             Console.WriteLine(ex);
         }
         //finally block will always execute
-        //effectively the same as just writing code after the try-catch block, bit good for strcture and readability
+        //effectively the same as just writing code after the try-catch block, but good for strcture and readability
         finally
         {
             Console.WriteLine("try-catch finished");
+            Console.WriteLine();
         }
 
-
-        uint x = uint.MaxValue; //1111 1111 1111 1111 1111 1111 1111 1111 = 4294967295
+        int x = int.MaxValue; //0111 1111 1111 1111 1111 1111 1111 1111 = 2147483647
         try
         {
             //checked keyword will throw an exception if an overflow occurs
             //otherwise it will wrap around to the lowest value and continue as if nothing went wrong
             checked
             {
-                x++; //(1) 0000 0000 0000 0000 0000 0000 0000 0000 = 0
+                x++; //1000 0000 0000 0000 0000 0000 0000 0000 = -2147483648
                 Console.WriteLine(x);
             }
             //unchecked would allow the overflow to occur and wrap around
-            //these can be applied globally using a pragma directive
         }
         catch (OverflowException ex)
         {
@@ -52,16 +52,18 @@ class Program
         //custom exception example
         try
         {
-            throw new CustomException("The hell you doin', Red?");
+            throw new CustomException("That won't work");
         }
         catch (CustomException ex)
         {
             Console.WriteLine(ex.Message);
         }
+        Console.WriteLine();
 
 
 
         //FILES:
+        Console.WriteLine("File Handling:");
         string fileName = "test.txt";
         string content = """
             This is a test file.
@@ -72,41 +74,59 @@ class Program
 
         //create a file with the given name and content
         CreateFile(fileName, content);
+        Console.WriteLine();
 
         //try to overwrite the file, and fail
         CreateFile(fileName, "This is a new file");
+        Console.WriteLine();
 
         //read the file and output the content
         ReadFile(fileName);
+        Console.WriteLine();
 
         //copying file
         string destinationFile = "default.txt";
         CopyFile(fileName, destinationFile);
+        Console.WriteLine();
 
         //read the destination file and output the content
         ReadFile(destinationFile);
+        Console.WriteLine();
 
         //and delete it
         DeleteFile(destinationFile);
+        Console.WriteLine();
 
         //verify that it was deleted
         ReadFile(destinationFile);
+        Console.WriteLine();
 
         //move file
         //we can't just drop a file in the root of C:\ in Windows without modifying permissions, so need to first make a folder for it to go into
         MakeDirectory(@"C:\temp\");
         MoveFile(fileName, @"C:\temp\moved.txt");
+        Console.WriteLine();
 
-        //check the file was moved and not copied
+        /*check the file was moved and not copied
+        note: the first ReadFile call should always succeed, and on a clean run the second should fail.
+        on a subsequent run, both should succeed since a new file was created and couldn't be moved because the destination already existed*/
+        ReadFile(@"C:\temp\moved.txt");
+        Console.WriteLine();
+
         ReadFile(fileName);
-    }
+        Console.WriteLine();
 
+        //delete files to do a clean run next time - comment this out to see the files
+        /*DeleteFile(fileName);
+        DeleteFile(destinationFile);
+        DeleteFile(@"C:\temp\moved.txt");*/
+    }
 
     private static void CreateFile(string path, string content)
     {
-        //create file for demo purposes
-        //if a file with the name already exists, it will not be overwritten
-        //we avoid the need for an exception by checking if the file exists first
+        /*create file for demo purposes
+        if a file with the name already exists, it will not be overwritten
+        we avoid the need for an exception by checking if the file exists first*/
         if(!File.Exists(path))
         {
             //output a message and create the file
@@ -137,6 +157,8 @@ class Program
             using (StreamReader sr = File.OpenText(fileName))
             {
                 string s;
+                Console.WriteLine("Reading file...");
+                //pragma to suppress warning about possible null value
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 while ((s = sr.ReadLine()) != null)
                 {
@@ -227,6 +249,7 @@ class Program
             Directory.CreateDirectory(path);
             Console.WriteLine("Directory created");
         }
+        //if it does, output a message
         else
         {
             Console.WriteLine("Directory already exists");
